@@ -10,7 +10,7 @@ def sync_customers():
 	sync_shopify_customers(shopify_customer_list)
 	frappe.local.form_dict.count_dict["customers"] = len(shopify_customer_list)
 	
-	sync_erpnext_customers(shopify_customer_list)
+	#sync_erpnext_customers(shopify_customer_list)
 
 def sync_shopify_customers(shopify_customer_list):
 	for shopify_customer in get_shopify_customers():

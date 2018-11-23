@@ -4,7 +4,7 @@ from frappe import _
 import json, math, time, pytz
 from .exceptions import ShopifyError
 from frappe.utils import get_request_session, get_datetime, get_time_zone
-
+from erpnext_ebay.vlog import vwrite
 def check_api_call_limit(response):
 	"""
 		This article will show you how to tell your program to take small pauses
@@ -116,16 +116,20 @@ def get_shopify_item_image(shopify_product_id):
 	return get_request("/admin/products/{0}/images.json".format(shopify_product_id))["images"]
 
 def get_shopify_orders(ignore_filter_conditions=False):
+	vwrite("IN get_shopify_orders")
 	shopify_orders = []
 
 	filter_condition = ''
 
 	if not ignore_filter_conditions:
 		filter_condition = get_filtering_condition()
+	vwrite("1")
 
 	for page_idx in xrange(0, get_total_pages("orders/count.json?status=any", ignore_filter_conditions) or 1):
+		vwrite("in for loop")
 		shopify_orders.extend(get_request('/admin/orders.json?status=any&limit=250&page={0}&{1}'.format(page_idx+1,
 			filter_condition))['orders'])
+	vwrite("returning")
 	return shopify_orders
 
 def get_shopify_customers(ignore_filter_conditions=False):

@@ -11,9 +11,11 @@ from .sync_customers import sync_customers
 from .sync_products import sync_products, update_item_stock_qty
 from .utils import disable_shopify_sync_on_exception, make_shopify_log
 from frappe.utils.background_jobs import enqueue
+from erpnext_ebay.vlog import vwrite
 
 @frappe.whitelist()
 def sync_shopify():
+	vwrite("In sync_shopify")
 	"Enqueue longjob for syncing shopify"
 	enqueue("erpnext_shopify.api.sync_shopify_resources", queue='long', timeout=1500)
 	frappe.msgprint(_("Queued for syncing. It may take a few minutes to an hour if this is your first sync."))
@@ -29,14 +31,14 @@ def sync_shopify_resources():
 			now_time = frappe.utils.now()
 			validate_shopify_settings(shopify_settings)
 			frappe.local.form_dict.count_dict = {}
-			sync_products(shopify_settings.price_list, shopify_settings.warehouse)
+			#sync_products(shopify_settings.price_list, shopify_settings.warehouse)
 			sync_customers()
 			sync_orders()
-			update_item_stock_qty()
+			#update_item_stock_qty()
 			frappe.db.set_value("Shopify Settings", None, "last_sync_datetime", now_time)
 			
-			make_shopify_log(title="Sync Completed", status="Success", method=frappe.local.form_dict.cmd, 
-				message= "Updated {customers} customer(s), {products} item(s), {orders} order(s)".format(**frappe.local.form_dict.count_dict))
+			#make_shopify_log(title="Sync Completed", status="Success", method=frappe.local.form_dict.cmd, 
+				#message= "Updated {customers} customer(s), {products} item(s), {orders} order(s)".format(**frappe.local.form_dict.count_dict))
 
 		except Exception as e:
 			if e.args[0] and hasattr(e.args[0], "startswith") and e.args[0].startswith("402"):

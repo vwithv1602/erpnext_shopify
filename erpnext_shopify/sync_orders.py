@@ -8,17 +8,24 @@ from .sync_customers import create_customer
 from frappe.utils import flt, nowdate, cint
 from .shopify_requests import get_request, get_shopify_orders
 from erpnext.selling.doctype.sales_order.sales_order import make_delivery_note, make_sales_invoice
+from erpnext_ebay.vlog import vwrite
 product_not_exists = []
 
 def sync_orders():
+	vwrite("In sync_orders")
 	sync_shopify_orders()
 
 def sync_shopify_orders():
-	frappe.local.form_dict.count_dict["orders"] = 0
+	vwrite("In sync_shopify_orders")
+	#frappe.local.form_dict.count_dict["orders"] = 0
 	shopify_settings = frappe.get_doc("Shopify Settings", "Shopify Settings")
+	vwrite("got shopify_settings")
 	
 	for shopify_order in get_shopify_orders():
+		vwrite(shopify_order)
+		vwrite("Checking validity")
 		if valid_customer_and_product(shopify_order):
+			vwrite("valid customer and product")
 			try:
 				create_order(shopify_order, shopify_settings)
 				frappe.local.form_dict.count_dict["orders"] += 1
@@ -82,9 +89,9 @@ def create_sales_order(shopify_order, shopify_settings, company=None):
 			"selling_price_list": shopify_settings.price_list,
 			"ignore_pricing_rule": 1,
 			"items": items,
-			"taxes": get_order_taxes(shopify_order, shopify_settings),
-			"apply_discount_on": "Grand Total",
-			"discount_amount": get_discounted_amount(shopify_order),
+			#"taxes": get_order_taxes(shopify_order, shopify_settings),
+			#"apply_discount_on": "Grand Total",
+			#"discount_amount": get_discounted_amount(shopify_order),
 		})
 		
 		if company:
